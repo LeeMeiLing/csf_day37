@@ -1,7 +1,6 @@
 package sg.edu.nus.iss.day37_springboot.services;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +34,10 @@ public class S3Service {
         userData.put("uploadDateTime", LocalDateTime.now().toString());
         userData.put("originalFilename", file.getOriginalFilename());
 
+        System.out.println("filename: " + file.getOriginalFilename()); // debug
+        System.out.println("content-type: " + file.getContentType()); // debug
+        System.out.println("content-length: " + file.getSize()); // debug
+
         // construct metadata to be uploaded
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(file.getContentType()); // mandatory
@@ -48,19 +51,27 @@ public class S3Service {
         while(tk.hasMoreTokens()){
             if(count == 1){
                 filenameExt = tk.nextToken();
+                System.out.println(">>> in if count == 1"); // debug
+                System.out.println(filenameExt); // debug
                 break;
             }else{
                 filenameExt = tk.nextToken();
+                System.out.println(">>> in else"); // debug
+                System.out.println(filenameExt); // debug
             }
         }
 
-        // enforce any file to png
+        // enforce blob file to png
         if(filenameExt.equals("blob"))
-        filenameExt = filenameExt + ".png";
+            filenameExt = filenameExt + ".png";
 
-        PutObjectRequest putRequest = new PutObjectRequest(bucketName, "myobject%s.%s".formatted(key,filenameExt), file.getInputStream(), metadata);
+        // new PutObjectRequest (String bucketName, String key, InputStream input, ObjectMetadata metadata)
+        PutObjectRequest putRequest = new PutObjectRequest(bucketName, "myobject%s.%s".formatted(key,filenameExt), 
+                                                            file.getInputStream(), metadata);
         putRequest.withCannedAcl(CannedAccessControlList.PublicRead);
+
         s3Client.putObject(putRequest);
+
         return "myobject%s.%s".formatted(key,filenameExt);
     }
 }

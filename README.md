@@ -1,6 +1,6 @@
 # csf_day37
 
-# server side
+# server
 set DO_STORAGE_KEY=
 set DO_STORAGE_SECRETKEY=
 set DO_STORAGE_ENDPOINT=
