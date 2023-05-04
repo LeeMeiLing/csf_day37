@@ -38,7 +38,7 @@ public class S3Service {
         System.out.println("content-type: " + file.getContentType()); // debug
         System.out.println("content-length: " + file.getSize()); // debug
 
-        // construct metadata to be uploaded
+        // construct metadata to be uploaded to S3
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(file.getContentType()); // mandatory
         metadata.setContentLength(file.getSize()); // mandatory
@@ -56,12 +56,13 @@ public class S3Service {
                 break;
             }else{
                 filenameExt = tk.nextToken();
+                count++;
                 System.out.println(">>> in else"); // debug
                 System.out.println(filenameExt); // debug
             }
         }
 
-        // enforce blob file to png
+        // enforce blob file to png (img file from angular will be blob; blob file cant load on digital ocean, need to download)
         if(filenameExt.equals("blob"))
             filenameExt = filenameExt + ".png";
 
