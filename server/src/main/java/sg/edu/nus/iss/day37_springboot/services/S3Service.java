@@ -1,9 +1,11 @@
 package sg.edu.nus.iss.day37_springboot.services;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
@@ -13,9 +15,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+
+import sg.edu.nus.iss.day37_springboot.models.S3Post;
 
 @Service
 public class S3Service {
@@ -74,5 +81,50 @@ public class S3Service {
         s3Client.putObject(putRequest);
 
         return "myobject%s.%s".formatted(key,filenameExt);
+    }
+
+
+    // download from S3
+    public Optional<S3Post> download(String imageKey) throws IOException{
+
+        try{
+
+            // new GetObjectRequest( String bucketName, String key)
+            GetObjectRequest getReq = new GetObjectRequest(bucketName, imageKey);
+            S3Object result = s3Client.getObject(getReq);
+
+            // debug use
+            System.out.println(">>> in S3 service download, result is: " + result);
+            System.out.println(">>> in S3 service download, result Content is: " + result.getObjectContent());
+            System.out.println(">>> content type: " + result.getObjectMetadata().getContentType());
+            System.out.println(">>> content length: " + result.getObjectMetadata().getContentLength());
+
+
+            S3Post s3Post = new S3Post();
+            s3Post.setMetaData(result.getObjectMetadata());
+            try(InputStream is = result.getObjectContent()){
+                s3Post.setImageContent(is.readAllBytes());
+            }
+
+            return Optional.of(s3Post);
+           
+
+        }catch(AmazonS3Exception ex){
+
+            // S3 client will throw an exception if the object is not found. Return a 404
+            ex.printStackTrace();
+            System.out.println(">> in catch AmazonS3Exception");
+            return Optional.empty();
+
+        }catch(Exception ex){
+
+            // For S3ObjectInputStream error
+            ex.printStackTrace();
+            System.out.println(">> in catch other Exception");
+            return Optional.empty();
+
+        }
+
+
     }
 }

@@ -32,9 +32,12 @@ public class FileUploadRepository {
 
     public void upload(MultipartFile file, String title, String complain) throws SQLException, IOException{
         try(Connection con = dataSource.getConnection();
-            PreparedStatement ps = con.prepareStatement(INSERT_POST_SQL)){
+            PreparedStatement ps = con.prepareStatement(INSERT_POST_SQL))
+        {
                 InputStream is = file.getInputStream();
-                ps.setBinaryStream(1, is,file.getSize());
+
+                // ps.setBinaryStream(int parameterIndex, InputStream x, long length)
+                ps.setBinaryStream(1, is , file.getSize());
                 ps.setString(2, title);
                 ps.setString(3, complain);
                 ps.executeUpdate();
@@ -55,7 +58,7 @@ public class FileUploadRepository {
                     p.setPostId(rs.getInt("id"));
                     p.setComplain(rs.getString("complain"));
                     p.setTitle(rs.getString("title"));
-                    p.setImage(rs.getBytes("blobc"));
+                    p.setImage(rs.getBytes("blobc"));   // use getBytes() to retrieve sql Blob  & store to byte[] in java
 
                  */
                 return Optional.of(post);
